@@ -1,12 +1,21 @@
 {
   "name": "rsschool-nodejs-course",
   "version": "1.0.0",
-  "description": "",
+  "description": "This is a repository for the node js course from rsschool",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Abacadabras/rsschool-nodejs-course.git"
   },
   "keywords": [],
   "author": "Sergei Pleshanov",
-  "license": "ISC"
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Abacadabras/rsschool-nodejs-course/issues"
+  },
+  "homepage": "https://github.com/Abacadabras/rsschool-nodejs-course/#readme"
 }
