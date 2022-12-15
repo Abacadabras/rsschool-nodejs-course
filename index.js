@@ -9,7 +9,14 @@ const rl = readline.createInterface({
 });
 
 console.log(`Welcome to the File Manager, ${userName}!`);
-rl.question('Do you like the Node.js? ', (answer) => {
-  console.log(`Thank you, your answer is accepted: ${answer}`);
+rl.on('line', (input) => {
+  if (input === '.exit') {
+    console.log(`Thank you for using File Manager, ${userName}!`);
+    rl.close();
+  }
+});
+
+rl.on('SIGINT', () => {
+  console.log(`Thank you for using File Manager, ${userName}!`);
   rl.close();
 });
