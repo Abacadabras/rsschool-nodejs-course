@@ -6,31 +6,42 @@ import { create } from './createFile.js';
 import { rename } from './renameFile.js';
 import { remove } from './deleteFile.js';
 import { copy } from './copyFile.js';
+import {osCommands} from './osCommands.js';
+import {calculateHash} from './calcHash.js';
+import {compressBrotli} from './compressBrotli.js';
+import {decompressBrotli} from './decompressBrotli.js';
+import {printInvalid} from './printInvalidInput.js';
+import {printFailed} from './printOperationFailed.js';
+import {currIn} from './youAreCurrentlyIn.js';
+import {parseArguments} from './parseArguments.js';
 import readline from 'readline';
-import process from "process";
+
 const usernameProvidedByUser = process.argv[3].split('=')[1];
 
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
-console.log(`Welcome! to the File Manager, ${usernameProvidedByUser}!`)
+console.log(`Welcome to the File Manager, ${usernameProvidedByUser}!`)
 setHomeDirectory();
-let currDir = process.cwd();
-console.log(`You are currently in ${currDir}`);
-rl.on('line', (input) => {
+currIn();
+rl.on('line', (command) => {
+  const input = command.trim();
+  const args = parseArguments(command.trim());
   if (input === '.exit') {
-    console.log(`Thank you for using File Manager, ${usernameProvidedByUser}!`);
+    console.log(`Thank you for using File Manager, ${usernameProvidedByUser}, goodbye!`);
     rl.close();
   } else if (input === 'up') {
     changeDirectory('up');
-    let currDir = process.cwd();
-    console.log(`You are currently in ${currDir}`);
+    currIn();
   } else if (input.startsWith('cd ')) {
-    const whereTo = input.split(' ')[1];
-    changeDirectory(whereTo);
-    let currDir = process.cwd();
-    console.log(`You are currently in ${currDir}`);
+    if (args.length > 1) {
+      printInvalid();
+    } else {
+      const whereTo = args[0];
+      changeDirectory(whereTo);
+      currIn();
+    }
   } else if (input === 'ls') {
     (async () => {
       try {
@@ -44,70 +55,148 @@ rl.on('line', (input) => {
   } else if (input.startsWith('rm ')) {
     (async () => {
       try {
-        const whatToDelete = input.split(' ')[1];
-        const answer = await remove(whatToDelete);
-        console.log(answer);
-        let currDir = process.cwd();
-        console.log(`You are currently in ${currDir}`);
+        if (args.length > 1) {
+          printInvalid();
+        } else {
+          const whatToDelete = args[0];
+          const answer = await remove(whatToDelete);
+          console.log(answer);
+          currIn();
+        }
+
       } catch (err) {
-        console.error(err);
+        printFailed();
       }
     })();
   } else if (input.startsWith('cat ')) {
-    const whatToRead = input.split(' ')[1];
-    const whereToWrite = input.split(' ')[2];
-    read(whatToRead, whereToWrite);
+    if (args.length > 1) {
+      printInvalid();
+    } else {
+      const whatToRead = args[0];
+      read(whatToRead);
+    }
   } else if (input.startsWith('add ')) {
-    const whatToCreate = input.split(' ')[1];
-    create(whatToCreate);
+    if (args.length > 1) {
+      printInvalid();
+    } else {
+      const whatToCreate = args[0];
+      create(whatToCreate);
+    }
   } else if (input.startsWith('cp ')) {
 
     (async () => {
       try {
-        const whatToCreate = input.split(' ')[1];
-        const whereToCopy = input.split(' ')[2];
-        const write = await copy(whatToCreate, whereToCopy);
-        let currDir = process.cwd();
-        console.log(`You are currently in ${currDir}`);
+        if (args.length > 2) {
+          printInvalid();
+        } else {
+          const whatToCreate = args[0];
+          const whereToCopy = args[1];
+          const write = await copy(whatToCreate, whereToCopy);
+          currIn();
+        }
       } catch (err) {
-        console.error(err);
+        printFailed();
       }
     })();
 
   } else if (input.startsWith('mv ')) {
     (async () => {
       try {
-        const whatToCreate = input.split(' ')[1];
-        const whereToCopy = input.split(' ')[2];
-        const write = await copy(whatToCreate, whereToCopy);
-        const answer = await remove(whatToCreate);
-        let currDir = process.cwd();
-        console.log(`You are currently in ${currDir}`);
+        if (args.length > 2) {
+          printInvalid();
+        } else {
+          const whatToCreate = args[0];
+          const whereToCopy = args[1];
+          const write = await copy(whatToCreate, whereToCopy);
+          const answer = await remove(whatToCreate);
+          currIn();
+        }
       } catch (err) {
-        console.error(err);
+        printFailed();
       }
     })();
   } else if (input.startsWith('rn ')) {
     (async () => {
       try {
-        const whatToRename = input.split(' ')[1];
-        const howToRename = input.split(' ')[2];
-        const renameFile = await rename(whatToRename, howToRename);
-        console.log(renameFile);
-        let currDir = process.cwd();
-        console.log(`You are currently in ${currDir}`);
+        if (args.length > 2) {
+          printInvalid();
+        } else {
+          const whatToRename = args[0];
+          const howToRename = args[1];
+          const renameFile = await rename(whatToRename, howToRename);
+          console.log(renameFile);
+          currIn();
+        }
       } catch (err) {
-        console.error(err);
+        printFailed();
+      }
+    })();
+  } else if (input.startsWith('os ')) {
+    (async () => {
+      try {
+        if (args.length > 1) {
+          printInvalid();
+        } else {
+          const parameter = args[0];
+          const osCommand = await osCommands(parameter);
+          console.log(osCommand);
+          currIn();
+        }
+      } catch (err) {
+        console.log(err);
+        printFailed();
+      }
+    })();
+  } else if (input.startsWith('hash ')) {
+    (async () => {
+      try {
+        if (args.length > 1) {
+          printInvalid();
+        } else {
+          const pathToFile = args[0];
+          const hash = await calculateHash(pathToFile);
+          console.log(hash);
+          currIn();
+        }
+      } catch (err) {
+        printFailed();
+      }
+    })();
+  } else if (input.startsWith('compress ')) {
+    (async () => {
+      try {
+        if (args.length > 2) {
+          printInvalid();
+        } else {
+          const pathToFile = args[0];
+          const pathToDestination = args[1];
+          const compress = await compressBrotli(pathToFile, pathToDestination);
+        }
+      } catch (err) {
+        printFailed();
+      }
+    })();
+  } else if (input.startsWith('decompress ')) {
+    (async () => {
+      try {
+        if (args.length > 2) {
+          printInvalid();
+        } else {
+          const pathToFile = args[0];
+          const pathToDestination = args[1];
+          const compress = await decompressBrotli(pathToFile, pathToDestination);
+        }
+      } catch (err) {
+        printFailed();
       }
     })();
   } else {
-    let currDir = process.cwd();
-    console.log(`You are sdfds currently in ${currDir}`);
+    printInvalid();
   }
 
 });
 
 rl.on('SIGINT', () => {
-  console.log(`Thank you for using File Manager, ${usernameProvidedByUser}!`);
+  console.log(`Thank you for using File Manager, ${usernameProvidedByUser}, goodbye!`);
   rl.close();
 });

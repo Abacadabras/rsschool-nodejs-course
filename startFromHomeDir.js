@@ -6,5 +6,4 @@ export const setHomeDirectory = async () => {
     process.chdir(userHomeDir);
   } catch (err) {
     console.error(err);
-  }
-}
+  }}
