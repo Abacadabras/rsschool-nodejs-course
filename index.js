@@ -16,7 +16,7 @@ import {currIn} from './youAreCurrentlyIn.js';
 import {parseArguments} from './parseArguments.js';
 import readline from 'readline';
 
-const usernameProvidedByUser = process.argv[3].split('=')[1];
+const usernameProvidedByUser = process.argv[2].split('=')[1];
 
 const rl = readline.createInterface({
   input: process.stdin,
